@@ -115,7 +115,7 @@ class DataGenerator():
         # psi = np.arctan2(vy, vx)
         # plt.suptitle(f"Example {idx}: v={v:.2f}, psi={psi:.2f}, t={t}")
         
-        plt.suptitle(f"v ={self.input_params[idx][0]:.2f}, psi={self.input_params[idx][1]:.2f}, t={self.input_params[idx][2]:.2f}")
+        plt.suptitle(f"vx ={self.input_params[idx][0]:.2f}, vy={self.input_params[idx][1]:.2f}, t={self.input_params[idx][2]:.2f}")
         
         plt.tight_layout()
         plt.show()
@@ -249,8 +249,8 @@ class DataGenerator():
             output_grids.append(output_grid)
             
             # Prepare input grid and parameters
-            # input_params.append([vx, vy, t])
-            input_params.append([v, psi, t])
+            input_params.append([vx, vy, t])
+            # input_params.append([v, psi, t])
 
         input_grid_tensor = tf.convert_to_tensor(np.expand_dims(self.grid, axis=[0,-1]), dtype=tf.float32)  # Add batch dimension
         input_params_tensor = tf.convert_to_tensor(input_params, dtype=tf.float32)

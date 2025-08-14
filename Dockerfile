@@ -81,9 +81,9 @@ RUN echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> 
 RUN echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ~/.bashrc
 RUN echo "source /vrx_ws/install/setup.bash" >> ~/.bashrc
 
-# # # Set up the entrypoint
+# # Set up the entrypoint
 WORKDIR /vrx_ws
-COPY .entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
 
 CMD ["bash"]

@@ -13,7 +13,10 @@ setup(
         ('share/' + package_name + '/launch', ['launch/dyn_map.launch.py']),
         ('share/' + package_name + '/launch', ['launch/informative_planner_log.launch.py']),
         ('share/' + package_name + '/launch', ['launch/baseline_log.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/vis_rviz.launch.py']),
+        ('share/' + package_name + '/config', ['config/def_config.rviz']),
     ],
+    
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='sanjeev',

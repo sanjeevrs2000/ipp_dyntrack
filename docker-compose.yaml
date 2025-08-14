@@ -1,7 +1,8 @@
 # version: "3.3"
 services:
   base_ros:
-    image: user/ipp_dyntrack:1.0
+    # image: user/ipp_dyntrack:1.0
+    image: my/ros:app
     container_name: ipp_dyntrack_container
     stdin_open: true
     tty: true
@@ -9,7 +10,7 @@ services:
       - DISPLAY=${DISPLAY}
       - XAUTHORITY=/tmp/.docker.xauth
       - QT_X11_NO_MITSHM=1
-      - QT_QPA_PLATFORM=xcb
+      # - QT_QPA_PLATFORM=xcb
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all          # <-- remove spaces and just use 'all'
       - LIBGL_ALWAYS_SOFTWARE=0
@@ -17,7 +18,7 @@ services:
       - __GLX_VENDOR_LIBRARY_NAME=nvidia        # <-- pick NVIDIA GLX vendor
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /tmp/.docker.xauth:/tmp/.docker.xauth:ro
-    # mem_limit: 8g
-    # shm_size: 2g
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+    mem_limit: 8g
+    shm_size: 2g
 
