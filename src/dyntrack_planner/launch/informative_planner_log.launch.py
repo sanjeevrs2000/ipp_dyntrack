@@ -30,7 +30,7 @@ def launch(context, *args, **kwargs):
     bridge_competition_topics = LaunchConfiguration(
         'bridge_competition_topics').perform(context).lower() == 'true'
     robot = LaunchConfiguration('robot').perform(context)
-    headless = LaunchConfiguration('headless').perform(context).lower() == 'false'
+    headless = LaunchConfiguration('headless').perform(context).lower() == 'true'
     robot_urdf = LaunchConfiguration('urdf').perform(context)
     gz_paused = LaunchConfiguration('paused').perform(context).lower() == 'true'
     competition_mode = LaunchConfiguration('competition_mode').perform(context).lower() == 'true'
