@@ -1,0 +1,8 @@
+tensorflow==2.14.0
+keras==2.14.0
+matplotlib==3.5.1
+scipy==1.8.0
+torch==2.5.1
+ultralytics==8.3.69
+numpy==1.23.5
+transforms3d
