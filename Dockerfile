@@ -40,14 +40,10 @@ RUN apt-get update && apt-get install -y \
 RUN echo "export GZ_VERSION=garden" >> ~/.bashrc
 RUN source ~/.bashrc
 
-# RUN wget https://packages.osrfoundation.org/gazebo/ubuntu/pool/main/r/ros-humble-ros-gzgarden/ros-humble-ros-gzgarden_0.244.11-1002jammy_amd64.deb
-# RUN apt install -y ./ros-humble-ros-gzgarden_0.244.11-1002jammy_amd64.deb
-
 # Additional dependencies for the VRX simulator
 RUN apt-get update && apt install -y python3-sdformat13 ros-${ROS_DISTRO}-xacro ros-${ROS_DISTRO}-ros-gzgarden
 
-# # installing python dependencies first.
-
+# Installing python dependencies.
 RUN pip install tensorflow==2.14.0
 RUN pip install keras==2.14.0
 RUN pip install matplotlib==3.5.1
