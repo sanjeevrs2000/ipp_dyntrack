@@ -1,8 +1,7 @@
 # version: "3.3"
 services:
   base_ros:
-    # image: user/ipp_dyntrack:1.0
-    image: my/ros:app
+    image: user/ipp_dyntrack:1.0
     container_name: ipp_dyntrack_container
     stdin_open: true
     tty: true

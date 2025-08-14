@@ -5,12 +5,11 @@ Active Mapping in Dynamic Environments with ASVs".
 
 ## Setup the docker environment
 
-The simulation experiments are performed with the [VRX simulator](https://github.com/osrf/vrx). The software has been developed and tested with the simulator in Ubuntu 22.04 with ROS2 Humble and Gazebo garden. To get started, build a docker image by following the setup instructions. First clone the repository:
-```
+The simulation experiments are performed with the [VRX simulator](https://github.com/osrf/vrx). The software has been developed and tested with the simulator in Ubuntu 22.04 with ROS2 Humble and Gazebo garden. To get started, build a docker image by following the setup instructions. First clone/download the repository and extract it in your workspace.
+<!-- ```
 git clone git@github.com:sanjeevrs2000/ipp_dyntrack.git
-```
-
-Build the docker image, and then open a container with the newly built image:
+``` -->
+Then build the docker image, and open a container with the newly built image:
 ```
 docker build -f Dockerfile -t user/ipp_dyntrack:1.0
 chmod +x run_docker.sh
@@ -31,7 +30,7 @@ docker exec -it ipp_dyntrack_container bash
 To run an instance of the IPP framework inside the docker container, run the launch file:
 ```
 ros2 launch dyntrack_planner informative_planner_log.launch.py headless:=True 
-# headless:=False if you need to see the GUI
+# headless:=False to view the Gazebo GUI
 ```
 
 You can tune some parameters related to the experiments in ```src/dyntrack_planner/dyntrack_planner/params.py```. To visualize with rviz2, open another bash terminal inside the container and run:

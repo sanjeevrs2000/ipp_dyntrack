@@ -6,7 +6,7 @@ source /opt/ros/${ROS_DISTRO}/setup.bash
 echo "Sourced ROS 2 ${ROS_DISTRO}"
 
 # Source the base workspace, if built
-if [ -f /asv_ws/install/setup.bash ]
+if [ -f /vrx_ws/install/setup.bash ]
 then
   source /vrx_ws/install/setup.bash
   echo "Sourced vrx_ws base workspace"
