@@ -18,6 +18,5 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
-    mem_limit: 8g
-    shm_size: 2g
+    runtime: nvidia
 

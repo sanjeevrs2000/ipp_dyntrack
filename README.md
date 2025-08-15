@@ -11,14 +11,15 @@ git clone git@github.com:sanjeevrs2000/ipp_dyntrack.git
 ``` -->
 Then build the docker image, and open a container with the newly built image:
 ```
-docker build -f Dockerfile -t user/ipp_dyntrack:1.0
+docker build -f Dockerfile -t user/ipp_dyntrack:1.0 .
 chmod +x run_docker.sh
 ./run_docker.sh
 ```
+Note: To use GPU acceleration with NVIDIA GPUs, ensure that you have [nvidia-ctk](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed. If you do not have a GPU, in ```docker-compose.yaml``` comment the ```runtime: nvidia``` argument before running ```/run_docker.sh``` as it might cause some errors.
 
 ## How to use the repository?
 
-The packages ```dyntrack_planner``` contains nodes related to our IPP framework for perception, mapping and adaptive planning with the WAM-V ASV. The package ```asv_control``` implements a path following PID controller for the ASV based on line of sight (LOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
+The packages ```dyntrack_planner``` contains nodes related to implementation of our IPP framework. The ROS nodes for perception (Sec. IV B in the paper), mapping (Sec. IV C), and adaptive planning (Sec. IV E) are `perception.py`, `grid_map.py`, and `informative_planner.py`, respectively. The package ```asv_control``` implements a path following PID controller for the ASV based on line of sight (LOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
 
 ### Run experiments with the simulator
 
@@ -32,15 +33,18 @@ To run an instance of the IPP framework inside the docker container, run the lau
 ros2 launch dyntrack_planner informative_planner_log.launch.py headless:=True 
 # headless:=False to view the Gazebo GUI
 ```
-
-You can tune some parameters related to the experiments in ```src/dyntrack_planner/dyntrack_planner/params.py```. To visualize with rviz2, open another bash terminal inside the container and run:
+To visualize with rviz2, open another bash terminal inside the container and run:
 ```
 ros2 launch dyntrack_planner vis_rviz.launch.py
 ```
 
+For further experimentation, you can tune some parameters related to the experiments in ```src/dyntrack_planner/dyntrack_planner/params.py```. 
+<!-- Remember to colcon build and source the workspace before running the files after making changes to the src. -->
+
+
 ### Spatiotemporal prediction network
 
-To view the setup for dataset generation, training and testing of the spatiotemporal prediction network, go to the ```src/spatiotemp_pred_nn``` directory. To see sample predictions with the network, inside the container:
+To view the setup for dataset generation, training and testing of the spatiotemporal prediction network (Sec. IV D), go to the ```src/spatiotemp_pred_nn``` directory. To see sample predictions with the network, inside the container:
 ```
 cd src/spatiotemporal_pred_nn/src
 python3 test.py

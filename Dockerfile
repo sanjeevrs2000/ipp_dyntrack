@@ -3,8 +3,6 @@ FROM ros:humble-ros-base AS base
 ENV ROS_DISTRO=${ROS_DISTRO}
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install vim -y
-
 # ROS
 RUN apt-get update && apt-get install -y \
         build-essential \
@@ -19,11 +17,7 @@ RUN apt-get update && apt-get install -y \
 && rm -rf /var/lib/apt/lists/* \
 && apt-get clean
 
-# Use Cyclone DDS as middleware
-RUN apt-get update && apt-get install -y --no-install-recommends \
- ros-${ROS_DISTRO}-rmw-cyclonedds-cpp
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
+# Install gz garden
 RUN apt-get update && apt-get install -y \
     lsb-release \
     curl \
