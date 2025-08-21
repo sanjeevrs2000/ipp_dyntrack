@@ -1,7 +1,11 @@
 # An Informative Path Planning Framework for Target Tracking and Active Mapping in Dynamic Environments
 
-This repository contains code for the RA-L submission "An Informative Planning Framework for Target Tracking and
+This repository contains code for the preprint "An Informative Planning Framework for Target Tracking and
 Active Mapping in Dynamic Environments with ASVs".
+
+<!-- If you found this repository useful, you can cite us:
+```
+``` -->
 
 ## Setup the docker environment
 
@@ -19,7 +23,9 @@ Note: To use GPU acceleration with NVIDIA GPUs, ensure that you have [nvidia-ctk
 
 ## How to use the repository?
 
-The packages ```dyntrack_planner``` contains nodes related to implementation of our IPP framework. The ROS nodes for perception (Sec. IV B in the paper), mapping (Sec. IV C), and adaptive planning (Sec. IV E) are `perception.py`, `grid_map.py`, and `informative_planner.py`, respectively. The package ```asv_control``` implements a path following PID controller for the ASV based on line of sight (LOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
+The packages ```dyntrack_planner``` contains nodes related to implementation of our IPP framework. The package ```asv_control``` implements a path following PID controller for the ASV based on line of sight (LOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
+<!-- The ROS nodes for perception (Sec. IV B in the paper), mapping (Sec. IV C), and adaptive planning (Sec. IV E) are `perception.py`, `grid_map.py`, and `informative_planner.py`, respectively.  -->
+
 
 ### Run experiments with the simulator
 
