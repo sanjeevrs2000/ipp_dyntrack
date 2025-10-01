@@ -177,7 +177,7 @@ class PlannerNode(Node):
             if self.planner_ == 'sampling_based':
                 t = np.linspace(t_/5, t_, 5)
             elif self.planner_ == 'receding_horizon':
-                t = np.linspace(t_/5, 3*t_/5, 5)
+                t = np.linspace(t_/5, 2*t_/5, 2)
             for idx in t:
                 wp = Pose()
                 x, y = chosen_traj[int(idx-1)]
