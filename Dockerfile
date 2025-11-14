@@ -49,7 +49,6 @@ RUN pip install transforms3d
 
 RUN apt update && apt install -y ros-humble-tf-transformations
 
-
 # 
 RUN apt-get update && apt-get install -y \
     libgl1 libglvnd0 libglx0 libxext6 libx11-6 mesa-utils \

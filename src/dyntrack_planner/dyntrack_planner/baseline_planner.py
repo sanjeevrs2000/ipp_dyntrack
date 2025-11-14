@@ -8,16 +8,23 @@ from nav_msgs.msg import OccupancyGrid, GridCells, Odometry
 import numpy as np
 import tf_transformations
 from std_msgs.msg import Header, Float32, Float64
-from usv_navigation.utils import pose_to_numpy, SyncSubscription
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from matplotlib import animation
 from scipy.ndimage import shift
+from dyntrack_planner.utils import pose_to_numpy, SyncSubscription
 from dyntrack_planner.utils import to_logodds, to_prob, calc_4points_bezier_path, compute_entropy, compute_information_gain
 from dyntrack_planner.utils import grid_to_world, world_to_grid, get_fov, sensor_model, negative_sensor_model
-from dyntrack_planner.params import origin, p_low, p_high, alpha, beta, d_max, theta, t_, u, n_cand, base_planner, mission_time, coeff, dir_path
+from dyntrack_planner.params import *
 import tensorflow as tf
 import os
+
+gpus = tf.config.list_physical_devices('GPU')
+for gpu in gpus:
+    try:
+        tf.config.experimental.set_memory_growth(gpu, True)
+    except Exception as e:
+        print(f"Error setting memory growth for GPU {gpu}: {e}")
 
 class PlannerNode(Node): 
  
@@ -38,7 +45,8 @@ class PlannerNode(Node):
         self.create_subscription(Float64, "/wamv/thrusters/right/thrust", self.rt_callback, 10)
 
         self.origin = origin
-        self.r_tol = 5.0
+        # self.timer = self.create_timer(10, self.wp_callback)
+        self.r_tol = r_tol
         self.wps = PoseArray()
         self.trigger = False        
         self.wind_trigger = False
@@ -55,6 +63,9 @@ class PlannerNode(Node):
 
         self.timer = self.create_timer(0.1, self.wp_callback)
         # self.log_timer = self.create_timer(10, self.log_callback)
+
+        self.T = t_  # planning horizon
+        self.t_step = 1
                        
         self.path_followed = []
         
@@ -110,22 +121,22 @@ class PlannerNode(Node):
         x,y = self.wps.poses[-1].position.x, self.wps.poses[-1].position.y
         dist = np.linalg.norm(np.array([self.pos.x, self.pos.y]) - np.array([x,y]))
         
-        if base_planner == 'coverage':
+        if baseline_planner == 'coverage':
             if not self.wps_set:
                 self.coverage_planner()
                 self.wps_set = True
 
         elif not self.wps_set:
-            if base_planner == 'greedy':
+            if baseline_planner == 'greedy':
                 self.greedy_planner()
-            elif base_planner == 'random':
+            elif baseline_planner == 'random':
                 self.random_planner()
             self.wps_set = True
 
         elif self.rt==0 and self.lt==0 and dist < self.r_tol:
-            if base_planner == 'random':
+            if baseline_planner == 'random':
                 self.random_planner()
-            elif base_planner == 'greedy':
+            elif baseline_planner == 'greedy':
                 self.greedy_planner()
             self.wps_set = True
 
@@ -228,7 +239,9 @@ class PlannerNode(Node):
         theta_range = np.linspace(-3*np.pi/4, 3*np.pi/4, int(1.5*np.pi/interval +1)) 
         entr = []
         inf_gains = []
-        d = t_ * self.desired_speed
+        
+        # d = self.T * self.desired_speed
+        d = 0.4 * self.T * self.desired_speed # myopic greedy planner
         
         binary_grid = self.occupancy_grid.copy()
         # ids = (grid>0.4) & (grid!=0.5)
@@ -237,8 +250,8 @@ class PlannerNode(Node):
         binary_grid[ids] = 1
         
         trajectories = []
-        self.pred_unc_grids = self.predictions(binary_grid)
-
+        self.pred_unc_grids = self.predictions(binary_grid, visualize_=False)
+        
         if self.wps is None or len(self.wps.poses) == 0:
             xp = self.pos.x
             yp = self.pos.y
@@ -260,7 +273,7 @@ class PlannerNode(Node):
             trajectories.append(traj)
             
             # calculate information gain by considering just a single end pose greedily
-            diff_ent, inf_gain = self.simulate_pose_update(traj)
+            diff_ent, inf_gain = self.simulate_pose_update(traj, visualize_=False)
             entr.append(diff_ent)
             inf_gains.append(inf_gain)
         
@@ -269,7 +282,7 @@ class PlannerNode(Node):
         w = coeff
         if coeff == 'adaptive':
             cur_time = self.get_time() - self.start_time
-            w = 5 * (1 - cur_time / mission_time)  # adaptive weighting based on time left in mission
+            w = 5 * (cur_time / mission_time)  # adaptive weighting based on time left in mission
 
         self.get_logger().info(f'entropy list: {entr}, information gain list: {inf_gains}')
         ind = np.argmax(entr + w*inf_gains)  # prioritize entropy over information gain
@@ -282,25 +295,24 @@ class PlannerNode(Node):
             self.wps.poses.append(wp)
 
         t2 = self.get_time()
-        self.get_logger().info(f"Time taken for planning: {t2-t1} seconds")
 
     def predictions(self, grid):
     
         if not hasattr(self, 'model'):
-            path = os.path.join(dir_path, 'models/dynpred_unet_best')
+            path = os.path.join(dir_path, 'models/pred_unet_best')
             self.model = tf.keras.models.load_model(path)
 
         vx = self.wind_speed * np.cos(self.wind_dir)
         vy = self.wind_speed * np.sin(self.wind_dir)
 
-        input_grids = np.array([grid.copy() for _ in range(25)])
+        input_grids = np.array([grid.copy() for _ in range(self.T//self.t_step)])
         input_grids = np.expand_dims(input_grids, axis=-1)  # Add channel dimension
-        input_params = np.array([[vx, vy, t] for t in range(1, 26)])
+        input_params = np.array([[vx, vy, t] for t in range(1, self.T//self.t_step +1)])
         
         inputs = (tf.convert_to_tensor(input_grids, dtype=tf.float32),
                   tf.convert_to_tensor(input_params, dtype=tf.float32))
 
-        predictions = self.model.predict(inputs)
+        predictions = self.model(inputs, training=False).numpy()
         predictions[predictions < 0.01] = 0
 
         return predictions

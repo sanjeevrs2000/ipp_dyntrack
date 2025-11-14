@@ -2,11 +2,9 @@ import numpy as np
 import scipy
 from dyntrack_planner.params import d_max, theta, a0, d0, a1, d1
 from dyntrack_planner.params import origin, grid_size, resolution
-from geometry_msgs.msg import Pose
-import rclpy.time
 from rclpy.node import Node
 import message_filters
-
+import torch
 
 ### Mapping utils
 
@@ -25,7 +23,6 @@ def negative_sensor_model(dist):
 
     p = 1 - (1/(1+ np.exp(a1*(dist - d1))))
     return p
-
 
 def world_to_grid(x, y):
     """ Converts world coordinates to grid indices """
@@ -67,6 +64,51 @@ def get_fov(x, y, psi):
                 visible_ids.append([j,i])           
 
     return np.array(visible_ids)
+
+
+### Sensor models and fov for batch inputs with torch
+
+def batch_get_fov(x, y, psi, device):
+    
+    K = x.shape[0]
+
+    x_coords = ((torch.arange(grid_size[0]) + 0.5) * resolution + origin[0]).to(device)
+    y_coords = ((torch.arange(grid_size[1]) + 0.5) * resolution + origin[1]).to(device)
+
+    Cx, Cy = torch.meshgrid(x_coords, y_coords)  # Note the order to get Cx, Cy
+
+    dx = Cx.unsqueeze(0) - x.view(K, 1, 1)
+    dy = Cy.unsqueeze(0) - y.view(K, 1, 1)
+    dist = torch.sqrt(dx**2 + dy**2)
+    phi = torch.atan2(dy, dx)
+    delta_phi = (phi - psi.view(K, 1, 1) + np.pi) % (2 * np.pi) - np.pi
+    
+    fov_mask = (dist <= d_max) & (torch.abs(delta_phi) < theta)
+    
+    out = fov_mask.permute(0,2,1)
+
+    return out
+
+def batch_sensor_model(distances):
+    # Handle distances > d_max
+    result = torch.where(distances > d_max, 
+                        torch.full_like(distances, 0.5),
+                        1.0 / (1.0 + torch.exp(a0 * (distances - d0))))
+    
+    # Zero out where distances are 0 (non-FOV areas)
+    result = torch.where(distances == 0, torch.zeros_like(result), result)
+    
+    return result
+
+def batch_negative_sensor_model(distances):
+    
+    result = 1.0 - (1.0 / (1.0 + torch.exp(a1 * (distances - d1))))
+    
+    # Zero out where distances are 0 (non-FOV areas)
+    result = torch.where(distances == 0, torch.zeros_like(result), result)
+    
+    return result
+
 
 #### Entropy and information gain
 def compute_entropy(p):

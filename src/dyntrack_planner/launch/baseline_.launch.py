@@ -18,10 +18,10 @@ from launch.actions import DeclareLaunchArgument
 from launch.actions import OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 import os
-
 import vrx_gz.launch
 from vrx_gz.model import Model
 from launch_ros.actions import Node
+from dyntrack_planner.params import world_
 
 def launch(context, *args, **kwargs):
     config_file = LaunchConfiguration('config_file').perform(context)
@@ -49,6 +49,9 @@ def launch(context, *args, **kwargs):
       models.append(m)
 
     world_name, ext = os.path.splitext(world_name)
+    if world_:
+        world_name, ext = os.path.splitext(world_)
+    
     launch_processes.extend(vrx_gz.launch.simulation(world_name, headless, 
                                                      gz_paused, extra_gz_args))
     world_name_base = os.path.basename(world_name)
@@ -65,7 +68,7 @@ def generate_launch_description():
         # Launch Arguments
         DeclareLaunchArgument(
             'world',
-            default_value='sim_exp_scenario_1',
+            default_value='sim_exp_8_3',
             description='Name of world'),
         DeclareLaunchArgument(
             'sim_mode',
@@ -128,7 +131,7 @@ def generate_launch_description():
             package = 'obj_pos_publisher',
             executable = 'object_pos_node',
             name = 'object_pos_node',
-            arguments=[LaunchConfiguration('world')],  # Pass the world name to the node
+            arguments=[world_],  # Pass the world name to the node
         ),
         Node(
             package='dyntrack_planner',

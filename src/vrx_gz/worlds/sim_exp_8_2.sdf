@@ -1,5 +1,5 @@
 <sdf version="1.9">
-  <world name="sim_exp_scenario_4r">
+  <world name="sim_exp_8_2">
   
     <physics name="4ms" type="dart">
       <max_step_size>0.004</max_step_size>
@@ -351,7 +351,7 @@
           <topic>/vrx/wavefield/parameters</topic>
         </wavefield>
       </plugin>
-    <pose>-531.799 237.873 0.0 0 0 0</pose></include>
+    <pose>-471.454 181.585 0.0 0 0 0</pose></include>
 
     <include>
       <name>mb_round_buoy_black_02</name>
@@ -375,7 +375,7 @@
           <topic>/vrx/wavefield/parameters</topic>
         </wavefield>
       </plugin>
-    <pose>-506.733 218.950 0.0 0 0 0</pose></include>
+    <pose>-432.393 181.555 0.0 0 0 0</pose></include>
 
 
     <include>
@@ -400,7 +400,7 @@
           <topic>/vrx/wavefield/parameters</topic>
         </wavefield>
       </plugin>
-    <pose>-503.196 223.318 0.0 0 0 0</pose></include>
+    <pose>-467.108 170.727 0.0 0 0 0</pose></include>
 
     <include>
       <name>mb_round_buoy_orange_01</name>
@@ -421,7 +421,7 @@
           </geometry>
         </buoyancy>
       </plugin>
-    <pose>-517.855 249.325 0.0 0 0 0</pose></include>
+    <pose>-439.580 187.726 0.0 0 0 0</pose></include>
 
     <include>
       <name>mb_round_buoy_orange_02</name>
@@ -442,7 +442,7 @@
           </geometry>
         </buoyancy>
       </plugin>
-    <pose>-488.724 241.148 0.0 0 0 0</pose></include>
+    <pose>-436.071 178.850 0.0 0 0 0</pose></include>
 
     <include>
       <name>mb_round_buoy_orange_03</name>
@@ -463,7 +463,7 @@
           </geometry>
         </buoyancy>
       </plugin>
-    <pose>-494.674 221.371 0.0 0 0 0</pose></include>
+    <pose>-480.254 191.528 0.0 0 0 0</pose></include>
 
     <include>
       <name>mb_round_buoy_orange_04</name>
@@ -484,7 +484,7 @@
           </geometry>
         </buoyancy>
       </plugin>
-    <pose>-527.290 253.038 0.0 0 0 0</pose></include>
+    <pose>-451.447 162.879 0.0 0 0 0</pose></include>
 
 
     <include>
@@ -510,7 +510,7 @@
         </wavefield>
 
       </plugin>
-    <pose>-497.725 246.314 0.0 0 0 0</pose></include>
+    <pose>-473.088 165.490 0.0 0 0 0</pose></include>
 
 
     
@@ -597,7 +597,7 @@
       </wind_obj>
       <wind_obj>
         <name>mb_round_buoy_orange_03</name>
-        <link_name>mb_round_buoy_orange_03::link</link_name>    
+        <link_name>mb_round_buoy_orange_03::link</link_name>
         <coeff_vector>.1 .1 .001</coeff_vector>
       </wind_obj>
       <wind_obj>
@@ -629,11 +629,11 @@
 
       
       <wind_direction>0</wind_direction>
-      <wind_mean_direction>315</wind_mean_direction>
+      <wind_mean_direction>120</wind_mean_direction>
       <var_direction_gain_constants>15</var_direction_gain_constants>
       <var_direction_time_constants>20</var_direction_time_constants>
       
-      <wind_mean_velocity>7.5</wind_mean_velocity>
+      <wind_mean_velocity>8</wind_mean_velocity>
       <var_wind_gain_constants>1.5</var_wind_gain_constants>
       <var_wind_time_constants>5</var_wind_time_constants>
       <random_seed>0</random_seed>

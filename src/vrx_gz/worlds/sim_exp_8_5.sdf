@@ -1,5 +1,5 @@
 <sdf version="1.9">
-  <world name="sim_exp_scenario_5">
+  <world name="sim_exp_8_5">
   
     <physics name="4ms" type="dart">
       <max_step_size>0.004</max_step_size>

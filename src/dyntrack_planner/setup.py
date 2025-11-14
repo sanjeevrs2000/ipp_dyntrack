@@ -11,8 +11,8 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/dyn_map.launch.py']),
-        ('share/' + package_name + '/launch', ['launch/informative_planner_log.launch.py']),
-        ('share/' + package_name + '/launch', ['launch/baseline_log.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/informative_planner.launch.py']),
+        ('share/' + package_name + '/launch', ['launch/baseline_.launch.py']),
         ('share/' + package_name + '/launch', ['launch/vis_rviz.launch.py']),
         ('share/' + package_name + '/config', ['config/def_config.rviz']),
     ],
@@ -27,10 +27,11 @@ setup(
     entry_points={
         'console_scripts': [
             'occupancy_grid = dyntrack_planner.grid_map:main',
-            'informative_planner = dyntrack_planner.informative_planner:main',
             'data_logger = dyntrack_planner.logger:main',
-            'baseline_planner = dyntrack_planner.baseline_planner:main',
             'perception = dyntrack_planner.perception:main',
+            'baseline_planner = dyntrack_planner.baseline_planner:main',
+            'rec_horizon_planner = dyntrack_planner.rec_horizon_planner:main',
+            'sb_planner = dyntrack_planner.sb_planner:main',
         ],
     },
 )

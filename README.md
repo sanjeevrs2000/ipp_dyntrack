@@ -50,7 +50,7 @@ docker exec -it ipp_dyntrack_container bash
 
 To run an instance of the IPP framework inside the docker container, run the launch file:
 ```
-ros2 launch dyntrack_planner informative_planner_log.launch.py headless:=True 
+ros2 launch dyntrack_planner informative_planner.launch.py headless:=True 
 # headless:=False to view the Gazebo GUI
 ```
 To visualize with rviz2, open another bash terminal inside the container and run:

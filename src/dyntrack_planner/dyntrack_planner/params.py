@@ -22,21 +22,23 @@ t_ = 25 # planning horizon in seconds
 u = 1.5 # speed of the vehicle in m/s
 n_cand = 7 # number of candidate trajectories
 
-# coeff = 2 # coefficient for weighting prediction
-# coeff = 5 #
+# coeff = 5 # coefficient for weighting prediction
 coeff = 'adaptive'  # (5)*(1-t/T)
 
-# base_planner = 'coverage'
-# base_planner = 'random'
-# base_planner = 'greedy'
+baseline_planner = 'greedy' # greedy, random, coverage
 
+# For los-pd controller
+l_d = 8
+r_tol = 4.5 # for waypoint switching - radius around wp
+x_tol = 1 # alongtrack tolerance for switching
 
-# planner = 'receding_horizon'
-planner = 'sampling_based'
-
-save_name = 'trial_run'
-
+save_name = 'trial_run' # for logging metrics
 dir_path = '/vrx_ws/src/dyntrack_planner'
-# dir_path = os.path.dirname(__file__)
 
 mission_time = 250
+
+## select scenario - 8, 16, or 32 objects in the environment
+
+# world_ = 'sim_exp_8_1' # 1-5
+# world_ = 'sim_exp_16_1' # 16_1, 16_2
+world_ = 'sim_exp_32_1' # 32_1, 32_2
