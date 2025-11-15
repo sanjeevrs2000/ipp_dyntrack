@@ -63,12 +63,12 @@ ros2 launch dyntrack_planner vis_rviz.launch.py
 ```
 
 For further experimentation, you can tune some parameters related to the experiments in ```src/dyntrack_planner/dyntrack_planner/params.py```. 
-<!-- Remember to colcon build and source the workspace before running the files after making changes to the src. -->
 
+<!-- Remember to colcon build and source the workspace before running the files after making changes to the src. -->
 
 ### Spatiotemporal prediction network
 
-To view the setup for dataset generation, training and testing of the spatiotemporal prediction network (Sec. IV D), go to the ```src/spatiotemp_pred_nn``` directory. To see sample predictions with the network, inside the container:
+To view the setup for dataset generation, training and testing of the spatiotemporal prediction network, go to the ```src/spatiotemp_pred_nn``` directory. To run sample predictions with the network, inside the container:
 ```
 cd src/spatiotemporal_pred_nn/src
 python3 test.py
