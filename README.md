@@ -37,7 +37,7 @@ Note: To use GPU acceleration with NVIDIA GPUs, ensure that you have [nvidia-ctk
 
 ## How to use the repository?
 
-The packages ```dyntrack_planner``` contains nodes related to implementation of our IPP framework. The package ```asv_control``` implements a path following PID controller for the ASV based on line of sight (LOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
+The packages ```dyntrack_planner``` contains nodes related to implementation of our IPP framework. The package ```asv_control``` implements a path following PD controller for the ASV based on adaptive line of sight (ALOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
 <!-- The ROS nodes for perception (Sec. IV B in the paper), mapping (Sec. IV C), and adaptive planning (Sec. IV E) are `perception.py`, `grid_map.py`, and `informative_planner.py`, respectively.  -->
 
 
@@ -47,7 +47,11 @@ To access a bash terminal inside the container, open a new terminal and run:
 ```
 docker exec -it ipp_dyntrack_container bash
 ``` 
-
+First, build the packages and then source the workspace in the container:
+```
+colcon build --merge-install
+source install/setup.bash
+```
 To run an instance of the IPP framework inside the docker container, run the launch file:
 ```
 ros2 launch dyntrack_planner informative_planner.launch.py headless:=True 

@@ -56,19 +56,19 @@ RUN apt-get update && apt-get install -y \
 
 # # Create Colcon workspace with external dependencies
 RUN mkdir -p /vrx_ws/src
-WORKDIR /vrx_ws/src
-COPY /src /vrx_ws/src
+# WORKDIR /vrx_ws/src
+# COPY /src /vrx_ws/src
 
 # Build the base Colcon workspace
 WORKDIR /vrx_ws
-RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
-  && apt-get update -y \
-  && colcon build --merge-install
+# RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
+#   && apt-get update -y \
+#   && colcon build --merge-install
 
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 RUN echo "source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash" >> ~/.bashrc
 RUN echo "source /usr/share/colcon_cd/function/colcon_cd.sh" >> ~/.bashrc
-RUN echo "source /vrx_ws/install/setup.bash" >> ~/.bashrc
+# RUN echo "source /vrx_ws/install/setup.bash" >> ~/.bashrc
 
 # # Set up the entrypoint
 WORKDIR /vrx_ws
