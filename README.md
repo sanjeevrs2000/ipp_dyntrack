@@ -1,29 +1,11 @@
 # An Informative Path Planning Framework for Target Tracking and Active Mapping in Dynamic Environments
 
-This repository contains code for the preprint "An Informative Planning Framework for Target Tracking and
+This repository contains code for RA-L submission "An Informative Planning Framework for Target Tracking and
 Active Mapping in Dynamic Environments with ASVs".
-
-[![arXiv](https://img.shields.io/badge/arXiv-2508.14636-B31B1B.svg)](https://arxiv.org/abs/2508.14636)
-
-
-<!-- If you found this repository useful, you can cite us:
-```
-@article{sudha2025target,
-  title={An Informative Planning Framework for Target Tracking and Active Mapping in Dynamic Environments with ASVs},
-  author={Ramkumar Sudha, Sanjeev and Popovi{\'c}, Marija and Coates, Erlend M},
-  journal={arXiv preprint arXiv:2508.14636},
-  year={2025}
-}
-``` -->
 
 ## Setup the docker environment
 
-The simulation experiments are performed with the [VRX simulator](https://github.com/osrf/vrx). The software has been developed and tested with the simulator in Ubuntu 22.04 with ROS2 Humble and Gazebo garden. To get started, build a docker image by following the setup instructions. First clone the repository in your workspace:
-```
-git clone git@github.com:sanjeevrs2000/ipp_dyntrack.git
-```
-
-Then build the docker image:
+The simulation experiments are performed with the [VRX simulator](https://github.com/osrf/vrx). The software has been developed and tested with the simulator in Ubuntu 22.04 with ROS2 Humble and Gazebo garden. To get started, build a docker image by following the setup instructions. First clone the repository in your workspace. Then build the docker image:
 ```
 docker build -f Dockerfile -t user/ipp_dyntrack:1.0 .
 ```
@@ -38,7 +20,7 @@ Note: To use GPU acceleration with NVIDIA GPUs, ensure that you have [nvidia-ctk
 ## How to use the repository?
 
 The packages ```dyntrack_planner``` contains nodes related to implementation of our IPP framework. The package ```asv_control``` implements a path following PD controller for the ASV based on adaptive line of sight (ALOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
-<!-- The ROS nodes for perception (Sec. IV B in the paper), mapping (Sec. IV C), and adaptive planning (Sec. IV E) are `perception.py`, `grid_map.py`, and `informative_planner.py`, respectively.  -->
+<!-- The ROS nodes for perception (Sec. IV B in the paper), mapping (Sec. IV C), and adaptive planning (Sec. IV E) are `perception.py`, `grid_map.py`, and `rec_horizon_planner.py`, respectively.  -->
 
 
 ### Run experiments with the simulator
