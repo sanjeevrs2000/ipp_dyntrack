@@ -22,7 +22,7 @@ To open a container with the newly built image:
 chmod +x run_docker.sh
 ./run_docker.sh
 ```
-Note: To use GPU acceleration with NVIDIA GPUs, ensure that you have [nvidia-ctk](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed. If you do not have a GPU, in ```docker-compose.yaml``` comment the ```runtime: nvidia``` argument before running ```/run_docker.sh``` as it might cause some errors.
+Note: To use GPU acceleration with NVIDIA GPUs, ensure that you have [nvidia-ctk](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed. If you do not have a GPU, in ```docker-compose.yaml``` comment the ```runtime: nvidia``` argument before running ```docker compose up``` as it might cause some errors.
 
 ## How to use the repository?
 
