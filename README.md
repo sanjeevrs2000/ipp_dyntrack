@@ -1,11 +1,18 @@
 # An Informative Path Planning Framework for Target Tracking and Active Mapping in Dynamic Environments
 
-This repository contains code for "An Informative Planning Framework for Target Tracking and
+This repository contains code for the preprint "An Informative Planning Framework for Target Tracking and
 Active Mapping in Dynamic Environments with ASVs".
+
+[![arXiv](https://img.shields.io/badge/arXiv-2508.14636-B31B1B.svg)](https://arxiv.org/abs/2508.14636)
 
 ## Setup the docker environment
 
-The simulation experiments are performed with the [VRX simulator](https://github.com/osrf/vrx). The software has been developed and tested with the simulator in Ubuntu 22.04 with ROS2 Humble and Gazebo garden. To get started, build a docker image by following the setup instructions. First clone the repository in your workspace. Then build the docker image:
+The simulation experiments are performed with the [VRX simulator](https://github.com/osrf/vrx). The software has been developed and tested with the simulator in Ubuntu 22.04 with ROS2 Humble and Gazebo garden. To get started, build a docker image by following the setup instructions. First clone the repository in your workspace:
+```
+git clone git@github.com:sanjeevrs2000/ipp_dyntrack.git
+```
+
+Then build the docker image:
 ```
 docker build -f Dockerfile -t user/ipp_dyntrack:1.0 .
 ```
