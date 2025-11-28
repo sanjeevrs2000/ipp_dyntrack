@@ -11,7 +11,7 @@ import tf_transformations
 from std_msgs.msg import Header, Float32, Float64, Int32
 from dyntrack_planner.utils import pose_to_numpy, SyncSubscription
 from scipy.ndimage import shift
-from dyntrack_planner.utils import to_logodds, to_prob, calc_4points_bezier_path
+from dyntrack_planner.utils import to_logodds, to_prob, calc_4points_bezier_path, dubins_path_npoints
 from dyntrack_planner.utils import batch_get_fov, batch_sensor_model, batch_negative_sensor_model
 from dyntrack_planner.params import *
 import tensorflow as tf
@@ -196,8 +196,11 @@ class SBPlannerNode(Node):
         ye = y0 + v * np.sin(psi_e) * self.T
         
         n = self.T//self.t_step
-        traj, _ = calc_4points_bezier_path(x0, y0, psi0, xe, ye, psi_e,
-            offset=3.0, n_points=n)
+        # traj, _ = calc_4points_bezier_path(x0, y0, psi0, xe, ye, psi_e,
+        #     offset=3.0, n_points=n)
+
+        c = 1/(4.0 * self.desired_speed)
+        traj = dubins_path_npoints(x0, y0, psi0, xe, ye, psi_e, c, n)
 
         # choose waypoints at n/5, 2n/5...
         for i in range(n//5, n+1, n//5):
@@ -250,12 +253,20 @@ class SBPlannerNode(Node):
         batch_trajs = np.zeros((K, n_points, 2))
 
         for i in range(K):
-            traj, _ = calc_4points_bezier_path(
+            # traj, _ = calc_4points_bezier_path(
+            #     x0, y0, psi0, 
+            #     xt_np[i], yt_np[i], psi_np[i],
+            #     offset=3.0, 
+            #     n_points=n_points
+            # )
+            
+            traj = dubins_path_npoints(
                 x0, y0, psi0, 
-                xt_np[i], yt_np[i], psi_np[i],
-                offset=3.0, 
-                n_points=n_points
+                xt_np[i], yt_np[i], psi_np[i], 
+                1/(4.0 * self.desired_speed), 
+                n_points
             )
+            
             batch_trajs[i] = traj
 
         batch_trajs = torch.tensor(batch_trajs, device=device, dtype=torch.float32)

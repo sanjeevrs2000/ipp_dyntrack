@@ -88,6 +88,9 @@ class Perception(Node):
             position = self.calculate_3d_position(left_box, right_box)
             if position is None:
                 continue
+            if left_box.conf.item() < 0.3: # or \
+                # (left_box.xywh[2].item() < 10 and left_box.xywh[3].item() < 10):
+                continue
             # Create detection message
             detection = self.create_detection_msg(left_box, position)
             params.params.append(detection)

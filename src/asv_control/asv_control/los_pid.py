@@ -8,7 +8,6 @@ from sensor_msgs.msg import Imu
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseArray
 import tf_transformations
-import transforms3d
 import numpy as np
 import math
 from asv_control.utils import speed_thrust_wamv
@@ -21,7 +20,6 @@ class LOS_PID_Node(Node):
         self.wp_subscriber = self.create_subscription(PoseArray,'vrx/wayfinding/waypoints',self.wp_callback,10)
         self.speed_subscriber = self.create_subscription(Float64, 'vrx/wayfinding/desired_speed', self.speed_callback, 10)
         self.wamv_pos_subscriber = self.create_subscription(Odometry,'wamv/sensors/position/ground_truth_odometry', self. odom_callback, 10)
-        # self.wamv_imu_subscriber = self.create_subscription(Imu,'wamv/sensors/imu/imu/data',self.imu_gps_callback,10)
         self.left_thrust_publisher = self.create_publisher(Float64, 'wamv/thrusters/left/thrust',10)
         self.right_thrust_publisher = self.create_publisher(Float64, 'wamv/thrusters/right/thrust',10)
         self.left_thruster_pos_publisher = self.create_publisher(Float64, 'wamv/thrusters/left/pos',10)
@@ -29,6 +27,8 @@ class LOS_PID_Node(Node):
 
         self.psi = 0
         self.psi_error = 0
+        self.prev_psi_d = 0
+        self.psi_d = 0
         self.r = 0
         self.l_d = l_d
         self.r_tol = r_tol
@@ -36,11 +36,28 @@ class LOS_PID_Node(Node):
         self.wp_idx = 0
         self.wps = []
         self.X = 275 # forward thrust in N
+        self.dt = 0.04
+        self.err_int = 0
         
+        # PID gains, based on pole placement
+        self.m = 333
+        self.T = 1
+        self.k = self.T/self.m
+        self.d = 1/self.k
+        self.wn = 2
+        self.zeta = 0.8
+        self.Kp = self.m*self.wn**2-self.k
+        self.Kd = 2*self.m*self.zeta*self.wn-self.d
+        self.Ki = (self.wn/10)*self.Kp
+
         self.trigger = False
         self.wp_trigger = False
-        self.timer_= self.create_timer(0.04,self.los_pid_thrust_command)
+        self.timer_= self.create_timer(self.dt,self.los_pid_thrust_command)
         self.get_logger().info('LOS_PD_Controller publishing: ')
+
+        self.psi_log = []
+        self.psi_d_log = []
+        self.ce_log = []
 
     def odom_callback(self,msg):
         
@@ -60,7 +77,7 @@ class LOS_PID_Node(Node):
     def wp_callback(self,msg):
         
         if len(msg.poses) == 0:
-            # self.get_logger().info('No waypoints published')
+            self.get_logger().info('No waypoints published')
             return
         
         if len(msg.poses) > len(self.wps):
@@ -77,7 +94,6 @@ class LOS_PID_Node(Node):
     def speed_callback(self, msg):
         
         speed = msg.data
-        
         self.X = speed_thrust_wamv(speed)
         
     def los_pid_thrust_command(self):
@@ -116,55 +132,50 @@ class LOS_PID_Node(Node):
                 self.left_thruster_pos_publisher.publish(msg)
                 self.right_thruster_pos_publisher.publish(msg)
                 return
-        
+               
         # adaptive lookahead dist
-        l_d = 8 * np.exp(-0.4 * np.linalg.norm(cross_track)) + 2
+        # l_d = 8 * np.exp(-0.4 * np.linalg.norm(cross_track)) + 2        
+        
+        l_d = self.l_d
         
         los_point = proj + (l_d * path_vec)
 
         psi_d = math.atan2(los_point[1]-self.cur_pos[1], los_point[0]-self.cur_pos[0])
-        psi_d = ssa(psi_d)
+        self.psi_d = ssa(psi_d)
         
-        # self.get_logger().info(f'heading: {self.psi}, desired heading: {psi_d}')        
+        self.r_d = ssa(self.psi_d - self.prev_psi_d)/self.dt
+        self.prev_psi_d = self.psi_d
+        
         # self.get_logger().info(f'Current position: {self.cur_pos}, Goal position: {self.wps[self.wp_idx+1]}, Distance: {np.linalg.norm(self.cur_pos - self.wps[self.wp_idx+1])}')
-        # print(f'Current position: {self.cur_pos}, Goal position: {self.wps[self.wp_idx+1]}, Distance: {np.linalg.norm(self.cur_pos - self.wps[self.wp_idx+1])}')
         # self.get_logger().info(f'CE: {np.linalg.norm(cross_track)}, LE: {np.linalg.norm(along_track)}')
-        self.psi_error = ssa(psi_d - self.psi)
-    
-        m=180
-        T=1
-        k=T/m
-        d=1/k
-        wn=1
-        zeta=0.8
+        self.psi_error = ssa(self.psi_d - self.psi)
         
-        Kp = m*wn**2-k
-        Kd = 2*m*zeta*wn-d
-        # Ki = (wn/10) *self.Kp
-                
+        # if not hasattr(self, 'err_int'):
+        #     self.err_int = 0
+        # self.err_int += self.psi_error*self.dt
+        
+        
         Y = 0
-        N = -Kp*self.psi_error - Kd*self.r
-        X = self.X
+        # N = -self.Kp*self.psi_error - self.Kd*(self.r_d - self.r) - self.Ki*self.err_int
+        # N = -self.Kp*self.psi_error - self.Kd*(self.r_d - self.r)
+        N = -self.Kp*self.psi_error - self.Kd*self.r
+        # X = self.X
         
         #thrust allocation:
-        lp_x=-2.373
-        ls_x=-2.373
-        lp_y=-1.027
-        ls_y=1.027
-        
+        lp_x = -2.373
+        ls_x = -2.373
+        lp_y = -1.027
+        ls_y = 1.027
         b = ls_y - lp_y
-        
-        T = np.array([[1,0,1,0],[0,1,0,1],[-lp_y,-lp_x,-ls_y,-ls_x]])
-
-        # tau_vec = [X,Y,N]        
-        # f = np.dot(np.linalg.pinv(T),np.transpose(tau_vec))
-        
+                
         t_p = self.X*0.5 + N/b
         t_s = self.X*0.5 - N/b
         
         self.publish_thrust_cmds([t_p,t_s,0.0,0.0])
-        # log_msg='left thrust: '  + str(t_s) + ', angle: ' + str(del_p) + ', right thrust: ' + str(t_s) + ', angle: ' + str(del_s) 
-        # self.get_logger().info(str(f))
+       
+        # self.psi_log.append(self.psi)
+        # self.psi_d_log.append(psi_d)
+        # self.ce_log.append(np.linalg.norm(cross_track))
     
     def publish_thrust_cmds(self,thrust_vec):
         
@@ -174,7 +185,7 @@ class LOS_PID_Node(Node):
         self.right_thruster_pos_publisher.publish(Float64(data=thrust_vec[3]))
         
         return
-    
+        
 def ssa(angle):
     
     #smallest signed angle to constrain angle in [-pi,pi)
@@ -187,7 +198,6 @@ def main(args=None):
     node = LOS_PID_Node()
     rclpy.spin(node) 
     rclpy.shutdown() 
-
   
 if __name__ == "__main__": 
     main()

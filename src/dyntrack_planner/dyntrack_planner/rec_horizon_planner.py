@@ -11,7 +11,7 @@ import tf_transformations
 from std_msgs.msg import Header, Float32, Float64, Int32
 from dyntrack_planner.utils import pose_to_numpy, SyncSubscription
 from scipy.ndimage import shift
-from dyntrack_planner.utils import to_logodds, to_prob, calc_4points_bezier_path
+from dyntrack_planner.utils import to_logodds, to_prob, calc_4points_bezier_path, dubins_path_npoints
 from dyntrack_planner.utils import batch_get_fov, batch_sensor_model, batch_negative_sensor_model
 from dyntrack_planner.params import *
 import tensorflow as tf
@@ -60,11 +60,9 @@ class RHPlannerNode(Node):
         self.p_high = p_high
         self.alpha, self.beta = alpha, beta # dynamic occupancy grid update factor
         self.d, self.theta = d_max, theta  # field of view distance and angle
-        # self.desired_speed = u
         self.desired_speed = u
         self.l_low, self.l_high = to_logodds(p_low), to_logodds(p_high)
 
-        # self.log_timer = self.create_timer(10, self.log_callback)
         self.planner_timer = self.create_timer(0.1, self.planner)
         self.wp_timer = self.create_timer(0.1, self.wp_callback)
                        
@@ -77,22 +75,17 @@ class RHPlannerNode(Node):
         
         # hyperparameters for cost function
         self.w_coeff = coeff
-        # self.w_coeff = 'adaptive'
         if self.w_coeff == "adaptive":
             self.w_coeff = 5
  
         # for receding horizon planner
         self.heading_list = torch.linspace(-0.75*torch.pi, 0.75*torch.pi, steps=7)
-        # self.speed_list = torch.linspace(0.5, 2.0, steps=4)
         self.speed_list = torch.tensor(self.desired_speed).unsqueeze(0)
-        
         self.action_set = torch.cartesian_prod(self.speed_list, self.heading_list).to(def_device)
             
         self.counter = 1 # for plotting
-
         self.t_step = 1 #time_step for planner
         self.T = t_ # planning horizon
-
         self.t_delay = 0 # time delay for prediction for receding horizon planner
         
     def odom_callback(self, msg):
@@ -114,6 +107,7 @@ class RHPlannerNode(Node):
             init_pos.position.x = self.pos.x
             init_pos.position.y = self.pos.y
             init_pos.orientation = orientation_q
+            # add starting position as first wp
             self.wps.poses.append(init_pos)
             self.prev_wp = [self.pos.x, self.pos.y, self.psi]
             self.trigger = True
@@ -136,10 +130,7 @@ class RHPlannerNode(Node):
         og = og/100.0
         og[og == -1/100] = 0.5
         self.occupancy_grid = og.copy()
-        
-        x,y = self.wps.poses[-1].position.x, self.wps.poses[-1].position.y
-        # dist = np.linalg.norm(np.array([self.pos.x, self.pos.y]) - np.array([x,y]))
-        
+                
     def planner(self):
         
         if self.trigger==False or self.occupancy_grid is None:
@@ -152,7 +143,6 @@ class RHPlannerNode(Node):
         
         else:
             ## replan if current position is 1m before switching condition is met for last waypoint in the current path
-            
             xp, yp = self.wps.poses[-2].position.x, self.wps.poses[-2].position.y
             path_vec = (np.array([x0, y0]) - np.array([xp, yp]))/np.linalg.norm(np.array([x0, y0]) - np.array([xp, yp]))
 
@@ -176,7 +166,6 @@ class RHPlannerNode(Node):
         grid = self.occupancy_grid.copy()
         ids = (grid>0.5)
         grid[~ids] = self.p_low
-        
         self.pred_grids = self.pred_map(grid, self.T)
         
         # for tracking information gain
@@ -204,14 +193,15 @@ class RHPlannerNode(Node):
         psi_e = (psi_e + np.pi) % (2 * np.pi) - np.pi
 
         n = self.T//self.t_step        
-        traj, _ = calc_4points_bezier_path(x0, y0, psi0, xe, ye, psi_e,
-            offset=3.0, n_points=n)
+        # traj, _ = calc_4points_bezier_path(x0, y0, psi0, xe, ye, psi_e,
+        #     offset=3.0, n_points=n)
+        c = 1/(self.desired_speed*4.0)
+        traj = dubins_path_npoints(x0, y0, psi0, xe, ye, psi_e, c, n)
 
-        # choose waypoints at n/5 and 2n/5
+        ## choose 2 waypoints at 25 and 50% of the path
         wp = Pose()
-        wp.position.x = traj[n//5, 0]
-        wp.position.y = traj[n//5, 1]
-        psi = np.arctan2(traj[n//5, 1] - traj[0, 1], traj[n//5, 0] - traj[0, 0])
+        wp.position.x, wp.position.y = traj[n//4, 0], traj[n//4, 1]
+        psi = np.arctan2(traj[n//4, 1] - traj[0, 1], traj[n//4, 0] - traj[0, 0])
         q = tf_transformations.quaternion_from_euler(0,0,psi)
         wp.orientation.x = q[0]
         wp.orientation.y = q[1]
@@ -220,9 +210,9 @@ class RHPlannerNode(Node):
         self.wps.poses.append(wp)
 
         wp = Pose()
-        wp.position.x = traj[2*self.T//5, 0]
-        wp.position.y = traj[2*self.T//5, 1]
-        psi = np.arctan2(traj[2*self.T//5, 1] - traj[self.T//5, 1], traj[2*self.T//5, 0] - traj[self.T//5, 0])
+        wp.position.x = traj[n//2, 0]
+        wp.position.y = traj[n//2, 1]
+        psi = np.arctan2(traj[n//2, 1] - traj[n//4, 1], traj[n//2, 0] - traj[n//4, 0])
         q = tf_transformations.quaternion_from_euler(0,0,psi)
         wp.orientation.x = q[0]
         wp.orientation.y = q[1]
@@ -271,12 +261,17 @@ class RHPlannerNode(Node):
         batch_trajs = np.zeros((K, n_points, 2))
 
         for i in range(K):
-            traj, _ = calc_4points_bezier_path(
-                x0, y0, psi0, 
-                xt_np[i], yt_np[i], psi_np[i],
-                offset=3.0, 
-                n_points=n_points
-            )
+            # traj, _ = calc_4points_bezier_path(
+            #     x0, y0, psi0, 
+            #     xt_np[i], yt_np[i], psi_np[i],
+            #     offset=3.0, 
+            #     n_points=n_points
+            # )
+
+            traj = dubins_path_npoints(x0, y0, psi0,
+                                       xt_np[i], yt_np[i], psi_np[i], 
+                1/(self.desired_speed*4.0), n_points)
+
             batch_trajs[i] = traj
 
         batch_trajs = torch.tensor(batch_trajs, device=device, dtype=torch.float32)
