@@ -26,7 +26,7 @@ Note: To use GPU acceleration with NVIDIA GPUs, ensure that you have [nvidia-ctk
 
 ## How to use the repository?
 
-The packages ```dyntrack_planner``` contains nodes related to implementation of our IPP framework. The package ```asv_control``` implements a path following PD controller for the ASV based on adaptive line of sight (ALOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
+The packages ```dyntrack_planner``` contains nodes related to implementation of our IPP framework. The package ```asv_control``` implements a path following PD controller for the ASV based on line of sight (LOS) guidance. In the ```vrx_gz``` package, some files have been modified from the original simulator for the sake of our experiments.
 <!-- The nodes for perception (Sec. IV B in the paper), mapping (Sec. IV C), and adaptive planning (Sec. IV E) are `perception.py`, `grid_map.py`, and `rec_horizon_planner.py`, respectively.  -->
 
 ### Run experiments with the simulator
