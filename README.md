@@ -1,6 +1,6 @@
 # An Informative Path Planning Framework for Target Tracking and Active Mapping in Dynamic Environments
 
-This repository contains code for the preprint "An Informative Planning Framework for Target Tracking and
+This repository contains code for the RA-L paper "An Informative Planning Framework for Target Tracking and
 Active Mapping in Dynamic Environments with ASVs".
 
 [![arXiv](https://img.shields.io/badge/arXiv-2508.14636-B31B1B.svg)](https://arxiv.org/abs/2508.14636)
