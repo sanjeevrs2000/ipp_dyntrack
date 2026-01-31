@@ -3,7 +3,22 @@
 This repository contains code for the RA-L paper "An Informative Planning Framework for Target Tracking and
 Active Mapping in Dynamic Environments with ASVs".
 
+[![DOI](https://img.shields.io/badge/DOI-10.1109%2FLRA.2026.3653335-blue)](https://doi.org/10.1109/LRA.2026.3653335)
 [![arXiv](https://img.shields.io/badge/arXiv-2508.14636-B31B1B.svg)](https://arxiv.org/abs/2508.14636)
+
+The paper can be found [here](https://arxiv.org/abs/2508.14636). If you found this repository useful, feel free to cite it.
+
+```
+@article{sanjeev2026informative,
+  title={An informative planning framework for target tracking and active mapping in dynamic environments with asvs},
+  author={Ramkumar Sudha, Sanjeev and Popovi{\'c}, Marija and Coates, Erlend M},
+  journal={IEEE Robotics and Automation Letters},
+  volume={11},
+  number={3},
+  pages={2690--2697},
+  year={2026},
+}
+```
 
 ## Setup the docker environment
 

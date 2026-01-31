@@ -177,7 +177,6 @@ class SBPlannerNode(Node):
         binary_grid[ids] = 1
         
         self.pred_unc_grids = self.predictions(binary_grid)
-        # self.pred_unc_grids = self.predictions_without_nn(binary_grid)
         
         # action set        
         states = self.get_trajectories(self.action_set, torch.device(def_device))
