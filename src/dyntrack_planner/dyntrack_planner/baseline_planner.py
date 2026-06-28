@@ -16,17 +16,10 @@ from dyntrack_planner.utils import pose_to_numpy, SyncSubscription
 from dyntrack_planner.utils import to_logodds, to_prob, calc_4points_bezier_path, compute_entropy, compute_information_gain
 from dyntrack_planner.utils import grid_to_world, world_to_grid, get_fov, sensor_model, negative_sensor_model
 from dyntrack_planner.params import *
-import tensorflow as tf
+import onnxruntime as ort
 import os
 
-gpus = tf.config.list_physical_devices('GPU')
-for gpu in gpus:
-    try:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    except Exception as e:
-        print(f"Error setting memory growth for GPU {gpu}: {e}")
-
-class PlannerNode(Node): 
+class PlannerNode(Node):
  
     def __init__(self): 
         
@@ -297,10 +290,21 @@ class PlannerNode(Node):
         t2 = self.get_time()
 
     def predictions(self, grid):
-    
-        if not hasattr(self, 'model'):
-            path = os.path.join(dir_path, 'models/pred_unet_best')
-            self.model = tf.keras.models.load_model(path)
+
+        if not hasattr(self, 'sess'):
+            so = ort.SessionOptions()
+            so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            providers = [
+                ('CUDAExecutionProvider', {"device_id": 0}),
+                'CPUExecutionProvider'
+            ]
+            self.sess = ort.InferenceSession(
+                os.path.join(dir_path, 'models/model_jetson_sim.onnx'),
+                sess_options=so,
+                providers=providers
+            )
+            self.get_logger().info(f'Loaded ONNX model with providers: {self.sess.get_providers()}')
+            self.input_names = [inp.name for inp in self.sess.get_inputs()]
 
         vx = self.wind_speed * np.cos(self.wind_dir)
         vy = self.wind_speed * np.sin(self.wind_dir)
@@ -308,11 +312,10 @@ class PlannerNode(Node):
         input_grids = np.array([grid.copy() for _ in range(self.T//self.t_step)])
         input_grids = np.expand_dims(input_grids, axis=-1)  # Add channel dimension
         input_params = np.array([[vx, vy, t] for t in range(1, self.T//self.t_step +1)])
-        
-        inputs = (tf.convert_to_tensor(input_grids, dtype=tf.float32),
-                  tf.convert_to_tensor(input_params, dtype=tf.float32))
 
-        predictions = self.model(inputs, training=False).numpy()
+        inputs = {self.input_names[0]: input_grids.astype(np.float32),
+                  self.input_names[1]: input_params.astype(np.float32)}
+        predictions = self.sess.run(None, inputs)[0]
         predictions[predictions < 0.01] = 0
 
         return predictions

@@ -36,16 +36,19 @@ RUN source ~/.bashrc
 
 # Additional dependencies for the VRX simulator
 RUN apt-get update && apt install -y python3-sdformat13 ros-${ROS_DISTRO}-xacro ros-${ROS_DISTRO}-ros-gzgarden
+RUN source ~/.bashrc
 
 # Installing python dependencies.
-RUN pip install tensorflow==2.14.0
-RUN pip install keras==2.14.0
+RUN apt-get update && apt install -y python3-pip
 RUN pip install matplotlib==3.5.1
 RUN pip install scipy==1.8.0
 RUN pip install torch==2.5.1
+RUN pip install torchvision==0.20.1
 RUN pip install ultralytics==8.3.69
 RUN pip install numpy==1.23.5
 RUN pip install transforms3d
+RUN pip install onnxruntime-gpu==1.19.2
+RUN pip install onnx==1.21.0
 
 RUN apt update && apt install -y ros-humble-tf-transformations
 

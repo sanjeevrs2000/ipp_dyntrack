@@ -31,7 +31,7 @@ class Perception(Node):
 
         self.camera_sub = SyncSubscription(self, camera_df, self.img_callback, queue_size=10, approx_time=0.1)
 
-        self.model = YOLO(model_path, verbose=False)
+        self.model = YOLO(model_path, task='detect', verbose=False)
         self.pose = Pose()
         self.image_msg = Image()
         self.results_pub = self.create_publisher(ParamVec, 'wamv/yolo/results', 10)
@@ -166,7 +166,7 @@ class Perception(Node):
     
 def main(args=None):
     rclpy.init(args=args)
-    path = os.path.join(dir_path, 'models/yolov8n_old.pt')
+    path = os.path.join(dir_path, 'models/yolov8n_old.onnx')
     node = Perception(path)
     rclpy.spin(node)
     node.destroy_node()
